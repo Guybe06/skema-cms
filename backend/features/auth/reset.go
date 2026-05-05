@@ -26,7 +26,8 @@ func (s *Service) RequestReset(ctx context.Context, email string) error {
 	}
 
 	cacheKey := fmt.Sprintf(constants.CacheKeyReset, user.ID)
-	if val, _ := s.cache.Get(ctx, cacheKey); val != "" {
+	var cached string
+	if err := s.cache.Get(ctx, cacheKey, &cached); err == nil && cached != "" {
 		return nil
 	}
 

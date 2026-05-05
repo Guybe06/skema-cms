@@ -45,7 +45,8 @@ func (s *Service) VerifyEmail(ctx context.Context, rawToken string) error {
 
 func (s *Service) ResendVerification(ctx context.Context, userID string) error {
 	cacheKey := fmt.Sprintf(constants.CacheKeyResend, userID)
-	if val, _ := s.cache.Get(ctx, cacheKey); val != "" {
+	var cached string
+	if err := s.cache.Get(ctx, cacheKey, &cached); err == nil && cached != "" {
 		return errors.New(constants.ErrTokenAlreadySent)
 	}
 
