@@ -1,0 +1,33 @@
+# Binaires
+backend/skema-api.exe
+backend/skema-api
+
+# Documentation générée
+backend/docs/
+
+# Variables d'environnement
+backend/.env
+frontend/.env
+infra/.env
+
+# Dépendances frontend
+frontend/node_modules/
+
+# Uploads locaux
+backend/uploads/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Fichiers réservés Windows
+backend/nul
+
+# IDE
+.idea/
+
+# Documentation interne
+.docs/
