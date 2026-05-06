@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
-	"skema-api/features/auth/types"
+	"skema-api/features/accounts/types"
 )
 
 func (r *Repository) CreateVerificationToken(ctx context.Context, t *types.VerificationToken) error {

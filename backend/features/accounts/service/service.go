@@ -4,7 +4,7 @@ import (
 	"skema-api/core/cache"
 	"skema-api/core/config"
 	"skema-api/core/mailer"
-	"skema-api/features/auth/repository"
+	"skema-api/features/accounts/repository"
 )
 
 type Service struct {

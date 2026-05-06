@@ -8,9 +8,9 @@ import (
 
 	"github.com/google/uuid"
 	"skema-api/core/mailer"
-	"skema-api/features/auth/constants"
-	"skema-api/features/auth/helpers"
-	"skema-api/features/auth/types"
+	"skema-api/features/accounts/constants"
+	"skema-api/features/accounts/helpers"
+	"skema-api/features/accounts/types"
 )
 
 /*

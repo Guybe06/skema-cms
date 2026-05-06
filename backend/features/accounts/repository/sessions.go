@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
-	"skema-api/features/auth/types"
+	"skema-api/features/accounts/types"
 )
 
 func (r *Repository) CreateSession(ctx context.Context, s *types.Session) error {

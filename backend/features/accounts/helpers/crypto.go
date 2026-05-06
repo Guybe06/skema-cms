@@ -10,7 +10,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 	"skema-api/core/middleware/auth"
-	"skema-api/features/auth/constants"
+	"skema-api/features/accounts/constants"
 )
 
 var dummyHash, _ = bcrypt.GenerateFromPassword([]byte("dummy-timing-protection"), constants.BcryptCost)

@@ -21,15 +21,15 @@ import (
 	"skema-api/core/middleware/timeout"
 	"skema-api/core/response"
 	_ "skema-api/docs"
-	"skema-api/features/auth"
-	authrepo "skema-api/features/auth/repository"
-	authsvc "skema-api/features/auth/service"
+	"skema-api/features/accounts"
+	accountsrepo "skema-api/features/accounts/repository"
+	accountssvc "skema-api/features/accounts/service"
 )
 
 // @title          Skema API
 // @version        1.0
 // @description    CMS headless self-hosted - API REST auto-générée.
-// @host           localhost:3000
+// @host           api.skemacms.com
 // @BasePath       /v1
 // @securityDefinitions.apikey BearerAuth
 // @in             header
@@ -85,9 +85,9 @@ func main() {
 func registerRoutes(api *gin.RouterGroup, cfg *config.Config, pool *pgxpool.Pool, c cache.Cache, m *mailer.Mailer) {
 	api.GET("/health", func(ctx *gin.Context) { handleHealth(ctx, cfg) })
 
-	repo := authrepo.New(pool)
-	svc := authsvc.New(repo, c, m, cfg)
-	auth.RegisterRoutes(api, svc, cfg.JwtSecret)
+	repo := accountsrepo.New(pool)
+	svc := accountssvc.New(repo, c, m, cfg)
+	accounts.RegisterRoutes(api, svc, cfg.JwtSecret)
 }
 
 // @Summary      Vérification de l'état du serveur

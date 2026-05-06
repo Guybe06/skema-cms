@@ -7,7 +7,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"skema-api/features/auth/types"
+	"skema-api/features/accounts/types"
 )
 
 type Repository struct {

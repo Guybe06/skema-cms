@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 
-	"skema-api/features/auth/constants"
+	"skema-api/features/accounts/constants"
 	"errors"
 )
 
