@@ -20,6 +20,9 @@ import (
 	"skema-api/features/accounts"
 	accountsrepo "skema-api/features/accounts/repository"
 	accountssvc "skema-api/features/accounts/service"
+	"skema-api/features/connections"
+	connectionsrepo "skema-api/features/connections/repository"
+	connectionssvc "skema-api/features/connections/service"
 	"skema-api/features/memberships"
 	membershipsrepo "skema-api/features/memberships/repository"
 	membershipssvc "skema-api/features/memberships/service"
@@ -115,6 +118,7 @@ func buildRouter() *gin.Engine {
 	orgsRepository := orgsrepo.New(testPool)
 	organizations.RegisterRoutes(v1, orgssvc.New(orgsRepository), testJWTSecret)
 	memberships.RegisterRoutes(v1, membershipssvc.New(membershipsrepo.New(testPool), orgsRepository, m, "http://localhost:3001"), testJWTSecret)
+	connections.RegisterRoutes(v1, connectionssvc.New(connectionsrepo.New(testPool), orgsRepository, "test-encryption-key-32-chars-pad!"), testJWTSecret)
 
 	return r
 }
@@ -138,7 +142,7 @@ func getenv(key, fallback string) string {
 func truncateTables(t *testing.T) {
 	t.Helper()
 	_, err := testPool.Exec(context.Background(),
-		`TRUNCATE users, sessions, verification_tokens, organizations, memberships RESTART IDENTITY CASCADE`,
+		`TRUNCATE users, sessions, verification_tokens, organizations, memberships, connections RESTART IDENTITY CASCADE`,
 	)
 	if err != nil {
 		t.Fatalf("nettoyage des tables échoué : %v", err)
