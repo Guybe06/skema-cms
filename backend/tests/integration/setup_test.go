@@ -20,6 +20,9 @@ import (
 	"skema-api/features/accounts"
 	accountsrepo "skema-api/features/accounts/repository"
 	accountssvc "skema-api/features/accounts/service"
+	"skema-api/features/memberships"
+	membershipsrepo "skema-api/features/memberships/repository"
+	membershipssvc "skema-api/features/memberships/service"
 	"skema-api/features/organizations"
 	orgsrepo "skema-api/features/organizations/repository"
 	orgssvc "skema-api/features/organizations/service"
@@ -108,7 +111,10 @@ func buildRouter() *gin.Engine {
 	accounts.RegisterRoutes(v1, accountsSvc, testJWTSecret)
 
 	users.RegisterRoutes(v1, userssvc.New(usersrepo.New(testPool)), testJWTSecret)
-	organizations.RegisterRoutes(v1, orgssvc.New(orgsrepo.New(testPool)), testJWTSecret)
+
+	orgsRepository := orgsrepo.New(testPool)
+	organizations.RegisterRoutes(v1, orgssvc.New(orgsRepository), testJWTSecret)
+	memberships.RegisterRoutes(v1, membershipssvc.New(membershipsrepo.New(testPool), orgsRepository, m, "http://localhost:3001"), testJWTSecret)
 
 	return r
 }
