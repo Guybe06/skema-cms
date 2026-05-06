@@ -31,3 +31,14 @@ func New(repo *repository.Repository, c cache.Cache, m *mailer.Mailer, cfg *conf
 		frontendURL: cfg.FrontendURL,
 	}
 }
+
+// NewForTest instancie le service sans passer par config.Config, pour les tests uniquement.
+func NewForTest(repo *repository.Repository, c cache.Cache, m *mailer.Mailer, jwtSecret, frontendURL string) *Service {
+	return &Service{
+		repo:        repo,
+		cache:       c,
+		mailer:      m,
+		jwtSecret:   jwtSecret,
+		frontendURL: frontendURL,
+	}
+}

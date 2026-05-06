@@ -24,6 +24,12 @@ import (
 	"skema-api/features/accounts"
 	accountsrepo "skema-api/features/accounts/repository"
 	accountssvc "skema-api/features/accounts/service"
+	"skema-api/features/organizations"
+	orgsrepo "skema-api/features/organizations/repository"
+	orgssvc "skema-api/features/organizations/service"
+	"skema-api/features/users"
+	usersrepo "skema-api/features/users/repository"
+	userssvc "skema-api/features/users/service"
 )
 
 // @title          Skema API
@@ -88,6 +94,9 @@ func registerRoutes(api *gin.RouterGroup, cfg *config.Config, pool *pgxpool.Pool
 	repo := accountsrepo.New(pool)
 	svc := accountssvc.New(repo, c, m, cfg)
 	accounts.RegisterRoutes(api, svc, cfg.JwtSecret)
+
+	users.RegisterRoutes(api, userssvc.New(usersrepo.New(pool)), cfg.JwtSecret)
+	organizations.RegisterRoutes(api, orgssvc.New(orgsrepo.New(pool)), cfg.JwtSecret)
 }
 
 // @Summary      Vérification de l'état du serveur

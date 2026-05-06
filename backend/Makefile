@@ -4,7 +4,7 @@ MIGRATE    = ./cmd/migrate
 DOCS_DIR   = docs
 SWAG       = $(shell go env GOPATH)/bin/swag
 
-.PHONY: build run dev docs stop migrate-up migrate-down migrate-step-up migrate-step-down migrate-force
+.PHONY: build run dev docs stop migrate-up migrate-down migrate-step-up migrate-step-down migrate-force test test-unit test-integration
 
 ## build : compile le binaire
 build:
@@ -45,3 +45,15 @@ migrate-step-down:
 ## migrate-force : force version sans exécuter la migration (ex: make migrate-force N=6)
 migrate-force:
 	go run $(MIGRATE)/main.go -steps $(N) force
+
+## test : lance tous les tests (unitaires + intégration)
+test:
+	go test ./tests/... -v -count=1
+
+## test-unit : lance uniquement les tests unitaires
+test-unit:
+	go test ./tests/unit/... -v -count=1
+
+## test-integration : lance uniquement les tests d'intégration (requiert PostgreSQL local)
+test-integration:
+	go test ./tests/integration/... -v -count=1 -timeout 60s

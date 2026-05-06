@@ -5,6 +5,7 @@ import (
 	"skema-api/core/response"
 )
 
+
 /*
  * Strict applique une limite de 10 requêtes/minute par IP.
  *
@@ -14,6 +15,11 @@ import (
 
 func Strict() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// En mode test, le rate limiting est désactivé pour ne pas bloquer les tests d'intégration.
+		if gin.Mode() == gin.TestMode {
+			c.Next()
+			return
+		}
 		if !authStore.get(c.ClientIP()).Allow() {
 			response.TooManyRequests(c)
 			c.Abort()

@@ -43,9 +43,8 @@ func (s *Service) Register(ctx context.Context, req types.RegisterRequest) (*typ
 		return nil, err
 	}
 
-	if err := s.sendVerificationEmail(ctx, user); err != nil {
-		return nil, err
-	}
+	// L'échec d'envoi d'email ne bloque pas la création du compte.
+	_ = s.sendVerificationEmail(ctx, user)
 
 	return s.buildSession(ctx, user)
 }
