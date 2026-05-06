@@ -1,14 +1,16 @@
-package auth
+package service
 
 import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	"skema-api/core/mailer"
 	"skema-api/features/auth/constants"
 	"skema-api/features/auth/helpers"
+	"skema-api/features/auth/types"
 )
 
 /*
@@ -19,9 +21,7 @@ import (
  */
 
 func (s *Service) VerifyEmail(ctx context.Context, rawToken string) error {
-	tokenHash := helpers.HashToken(rawToken)
-
-	t, err := s.repo.FindVerificationToken(ctx, tokenHash, constants.TokenTypeEmailVerification)
+	t, err := s.repo.FindVerificationToken(ctx, helpers.HashToken(rawToken), constants.TokenTypeEmailVerification)
 	if err != nil {
 		return err
 	}
@@ -62,10 +62,11 @@ func (s *Service) ResendVerification(ctx context.Context, userID string) error {
 		return err
 	}
 
-	t := &VerificationToken{
+	now := time.Now()
+	t := &types.VerificationToken{
 		ID: uuid.NewString(), UserID: userID, TokenHash: hashed,
-		Type: constants.TokenTypeEmailVerification,
-		ExpiresAt: timeNow().Add(constants.VerifyTokenExpiry), CreatedAt: timeNow(),
+		Type:      constants.TokenTypeEmailVerification,
+		ExpiresAt: now.Add(constants.VerifyTokenExpiry), CreatedAt: now,
 	}
 	if err := s.repo.CreateVerificationToken(ctx, t); err != nil {
 		return err

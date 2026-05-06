@@ -1,4 +1,4 @@
-package auth
+package types
 
 import "time"
 
@@ -14,11 +14,11 @@ type User struct {
 }
 
 type Session struct {
-	ID           string
-	UserID       string
-	TokenHash    string
-	ExpiresAt    time.Time
-	CreatedAt    time.Time
+	ID        string
+	UserID    string
+	TokenHash string
+	ExpiresAt time.Time
+	CreatedAt time.Time
 }
 
 type VerificationToken struct {

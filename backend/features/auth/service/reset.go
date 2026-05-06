@@ -1,4 +1,4 @@
-package auth
+package service
 
 import (
 	"context"
@@ -10,6 +10,7 @@ import (
 	"skema-api/core/mailer"
 	"skema-api/features/auth/constants"
 	"skema-api/features/auth/helpers"
+	"skema-api/features/auth/types"
 )
 
 /*
@@ -39,9 +40,9 @@ func (s *Service) RequestReset(ctx context.Context, email string) error {
 	}
 
 	now := time.Now()
-	t := &VerificationToken{
+	t := &types.VerificationToken{
 		ID: uuid.NewString(), UserID: user.ID, TokenHash: hashed,
-		Type: constants.TokenTypePasswordReset,
+		Type:      constants.TokenTypePasswordReset,
 		ExpiresAt: now.Add(constants.ResetTokenExpiry), CreatedAt: now,
 	}
 	if err := s.repo.CreateVerificationToken(ctx, t); err != nil {
@@ -65,9 +66,7 @@ func (s *Service) RequestReset(ctx context.Context, email string) error {
  */
 
 func (s *Service) ConfirmReset(ctx context.Context, rawToken, newPassword string) error {
-	tokenHash := helpers.HashToken(rawToken)
-
-	t, err := s.repo.FindVerificationToken(ctx, tokenHash, constants.TokenTypePasswordReset)
+	t, err := s.repo.FindVerificationToken(ctx, helpers.HashToken(rawToken), constants.TokenTypePasswordReset)
 	if err != nil {
 		return err
 	}

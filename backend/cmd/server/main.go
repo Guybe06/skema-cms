@@ -22,6 +22,8 @@ import (
 	"skema-api/core/response"
 	_ "skema-api/docs"
 	"skema-api/features/auth"
+	authrepo "skema-api/features/auth/repository"
+	authsvc "skema-api/features/auth/service"
 )
 
 // @title          Skema API
@@ -41,6 +43,10 @@ func main() {
 
 	if cfg.Env == "production" {
 		gin.SetMode(gin.ReleaseMode)
+	}
+
+	if err := db.EnsureExists(ctx, cfg.Database); err != nil {
+		log.Fatalf("Vérification base de données échouée : %v", err)
 	}
 
 	pool, err := db.Connect(ctx, cfg.Database)
@@ -79,9 +85,9 @@ func main() {
 func registerRoutes(api *gin.RouterGroup, cfg *config.Config, pool *pgxpool.Pool, c cache.Cache, m *mailer.Mailer) {
 	api.GET("/health", func(ctx *gin.Context) { handleHealth(ctx, cfg) })
 
-	authRepo := auth.NewRepository(pool)
-	authSvc := auth.NewService(authRepo, c, m, cfg)
-	auth.RegisterRoutes(api, authSvc, cfg.JwtSecret)
+	repo := authrepo.New(pool)
+	svc := authsvc.New(repo, c, m, cfg)
+	auth.RegisterRoutes(api, svc, cfg.JwtSecret)
 }
 
 // @Summary      Vérification de l'état du serveur

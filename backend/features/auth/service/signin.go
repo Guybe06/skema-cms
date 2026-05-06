@@ -1,4 +1,4 @@
-package auth
+package service
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 
 	"skema-api/features/auth/constants"
 	"skema-api/features/auth/helpers"
+	"skema-api/features/auth/types"
 )
 
 /*
@@ -15,7 +16,7 @@ import (
  * Retourne: les tokens d'accès ou une erreur d'authentification.
  */
 
-func (s *Service) Login(ctx context.Context, req LoginRequest) (*TokenResponse, error) {
+func (s *Service) Login(ctx context.Context, req types.LoginRequest) (*types.TokenResponse, error) {
 	user, err := s.repo.FindUserByEmail(ctx, req.Email)
 	if err != nil {
 		return nil, err

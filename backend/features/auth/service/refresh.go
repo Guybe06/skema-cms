@@ -1,4 +1,4 @@
-package auth
+package service
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 
 	"skema-api/features/auth/constants"
 	"skema-api/features/auth/helpers"
+	"skema-api/features/auth/types"
 )
 
 /*
@@ -15,7 +16,7 @@ import (
  * Retourne: une nouvelle paire de tokens ou une erreur si le token est invalide.
  */
 
-func (s *Service) Refresh(ctx context.Context, refreshToken string) (*TokenResponse, error) {
+func (s *Service) Refresh(ctx context.Context, refreshToken string) (*types.TokenResponse, error) {
 	tokenHash := helpers.HashToken(refreshToken)
 
 	session, err := s.repo.FindSessionByTokenHash(ctx, tokenHash)

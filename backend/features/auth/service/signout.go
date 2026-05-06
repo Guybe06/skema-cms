@@ -1,10 +1,10 @@
-package auth
+package service
 
 import (
 	"context"
-	"errors"
 
 	"skema-api/features/auth/constants"
+	"errors"
 )
 
 /*

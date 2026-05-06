@@ -1,13 +1,14 @@
-package auth
+package service
 
 import (
 	"skema-api/core/cache"
 	"skema-api/core/config"
 	"skema-api/core/mailer"
+	"skema-api/features/auth/repository"
 )
 
 type Service struct {
-	repo        *Repository
+	repo        *repository.Repository
 	cache       cache.Cache
 	mailer      *mailer.Mailer
 	jwtSecret   string
@@ -15,13 +16,13 @@ type Service struct {
 }
 
 /*
- * NewService instancie le service d'authentification avec ses dépendances.
+ * New instancie le service d'authentification avec ses dépendances.
  *
  * Attend  : le repository, le cache, le mailer et la configuration globale.
  * Retourne: un pointeur vers Service prêt à l'emploi.
  */
 
-func NewService(repo *Repository, c cache.Cache, m *mailer.Mailer, cfg *config.Config) *Service {
+func New(repo *repository.Repository, c cache.Cache, m *mailer.Mailer, cfg *config.Config) *Service {
 	return &Service{
 		repo:        repo,
 		cache:       c,

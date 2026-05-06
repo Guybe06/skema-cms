@@ -2,17 +2,19 @@ package auth
 
 import (
 	"github.com/gin-gonic/gin"
-	"skema-api/core/middleware/auth"
+	mwauth "skema-api/core/middleware/auth"
 	"skema-api/core/response"
 	"skema-api/core/validator"
 	"skema-api/features/auth/constants"
+	"skema-api/features/auth/service"
+	"skema-api/features/auth/types"
 )
 
 type Handler struct {
-	svc *Service
+	svc *service.Service
 }
 
-func NewHandler(svc *Service) *Handler {
+func NewHandler(svc *service.Service) *Handler {
 	return &Handler{svc: svc}
 }
 
@@ -20,11 +22,11 @@ func NewHandler(svc *Service) *Handler {
 // @Tags         auth
 // @Accept       json
 // @Produce      json
-// @Param        body body RegisterRequest true "Informations d'inscription"
+// @Param        body body types.RegisterRequest true "Informations d'inscription"
 // @Success      201 {object} response.Body
 // @Router       /auth/register [post]
 func (h *Handler) register(c *gin.Context) {
-	var req RegisterRequest
+	var req types.RegisterRequest
 	if errs := validator.BindAndValidate(c, &req); errs != nil {
 		response.ValidationError(c, response.MsgValidationError, errs)
 		return
@@ -41,11 +43,11 @@ func (h *Handler) register(c *gin.Context) {
 // @Tags         auth
 // @Accept       json
 // @Produce      json
-// @Param        body body LoginRequest true "Identifiants"
+// @Param        body body types.LoginRequest true "Identifiants"
 // @Success      200 {object} response.Body
 // @Router       /auth/login [post]
 func (h *Handler) login(c *gin.Context) {
-	var req LoginRequest
+	var req types.LoginRequest
 	if errs := validator.BindAndValidate(c, &req); errs != nil {
 		response.ValidationError(c, response.MsgValidationError, errs)
 		return
@@ -64,7 +66,7 @@ func (h *Handler) login(c *gin.Context) {
 // @Success      204
 // @Router       /auth/logout [post]
 func (h *Handler) logout(c *gin.Context) {
-	sessionID, _ := c.Get(auth.ContextKeySessionID)
+	sessionID, _ := c.Get(mwauth.ContextKeySessionID)
 	_ = h.svc.Logout(c.Request.Context(), sessionID.(string))
 	response.NoContent(c)
 }
@@ -73,11 +75,11 @@ func (h *Handler) logout(c *gin.Context) {
 // @Tags         auth
 // @Accept       json
 // @Produce      json
-// @Param        body body RefreshRequest true "Refresh token"
+// @Param        body body types.RefreshRequest true "Refresh token"
 // @Success      200 {object} response.Body
 // @Router       /auth/refresh [post]
 func (h *Handler) refresh(c *gin.Context) {
-	var req RefreshRequest
+	var req types.RefreshRequest
 	if errs := validator.BindAndValidate(c, &req); errs != nil {
 		response.ValidationError(c, response.MsgValidationError, errs)
 		return
@@ -94,11 +96,11 @@ func (h *Handler) refresh(c *gin.Context) {
 // @Tags         auth
 // @Accept       json
 // @Produce      json
-// @Param        body body VerifyEmailRequest true "Token de vérification"
+// @Param        body body types.VerifyEmailRequest true "Token de vérification"
 // @Success      200 {object} response.Body
 // @Router       /auth/verify-email [post]
 func (h *Handler) verifyEmail(c *gin.Context) {
-	var req VerifyEmailRequest
+	var req types.VerifyEmailRequest
 	if errs := validator.BindAndValidate(c, &req); errs != nil {
 		response.ValidationError(c, response.MsgValidationError, errs)
 		return
@@ -116,8 +118,7 @@ func (h *Handler) verifyEmail(c *gin.Context) {
 // @Success      200 {object} response.Body
 // @Router       /auth/resend-verification [post]
 func (h *Handler) resendVerification(c *gin.Context) {
-	userID := auth.GetUserID(c)
-	if err := h.svc.ResendVerification(c.Request.Context(), userID); err != nil {
+	if err := h.svc.ResendVerification(c.Request.Context(), mwauth.GetUserID(c)); err != nil {
 		response.BadRequest(c, err.Error())
 		return
 	}
@@ -128,11 +129,11 @@ func (h *Handler) resendVerification(c *gin.Context) {
 // @Tags         auth
 // @Accept       json
 // @Produce      json
-// @Param        body body RequestResetRequest true "Adresse email"
+// @Param        body body types.RequestResetRequest true "Adresse email"
 // @Success      200 {object} response.Body
 // @Router       /auth/request-reset [post]
 func (h *Handler) requestReset(c *gin.Context) {
-	var req RequestResetRequest
+	var req types.RequestResetRequest
 	if errs := validator.BindAndValidate(c, &req); errs != nil {
 		response.ValidationError(c, response.MsgValidationError, errs)
 		return
@@ -145,11 +146,11 @@ func (h *Handler) requestReset(c *gin.Context) {
 // @Tags         auth
 // @Accept       json
 // @Produce      json
-// @Param        body body ConfirmResetRequest true "Token et nouveau mot de passe"
+// @Param        body body types.ConfirmResetRequest true "Token et nouveau mot de passe"
 // @Success      200 {object} response.Body
 // @Router       /auth/confirm-reset [post]
 func (h *Handler) confirmReset(c *gin.Context) {
-	var req ConfirmResetRequest
+	var req types.ConfirmResetRequest
 	if errs := validator.BindAndValidate(c, &req); errs != nil {
 		response.ValidationError(c, response.MsgValidationError, errs)
 		return

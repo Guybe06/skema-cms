@@ -1,4 +1,4 @@
-package auth
+package repository
 
 import (
 	"context"
@@ -6,9 +6,10 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
+	"skema-api/features/auth/types"
 )
 
-func (r *Repository) CreateSession(ctx context.Context, s *Session) error {
+func (r *Repository) CreateSession(ctx context.Context, s *types.Session) error {
 	_, err := r.db.Exec(ctx,
 		`INSERT INTO sessions (id, user_id, token_hash, expires_at, created_at)
 		 VALUES ($1, $2, $3, $4, $5)`,
@@ -17,8 +18,8 @@ func (r *Repository) CreateSession(ctx context.Context, s *Session) error {
 	return err
 }
 
-func (r *Repository) FindSessionByTokenHash(ctx context.Context, tokenHash string) (*Session, error) {
-	s := &Session{}
+func (r *Repository) FindSessionByTokenHash(ctx context.Context, tokenHash string) (*types.Session, error) {
+	s := &types.Session{}
 	err := r.db.QueryRow(ctx,
 		`SELECT id, user_id, token_hash, expires_at, created_at
 		 FROM sessions WHERE token_hash = $1 AND expires_at > $2`,

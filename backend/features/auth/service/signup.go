@@ -1,4 +1,4 @@
-package auth
+package service
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 	"skema-api/core/mailer"
 	"skema-api/features/auth/constants"
 	"skema-api/features/auth/helpers"
+	"skema-api/features/auth/types"
 )
 
 /*
@@ -18,7 +19,7 @@ import (
  * Retourne: les tokens d'accès ou une erreur si l'email est déjà utilisé.
  */
 
-func (s *Service) Register(ctx context.Context, req RegisterRequest) (*TokenResponse, error) {
+func (s *Service) Register(ctx context.Context, req types.RegisterRequest) (*types.TokenResponse, error) {
 	existing, err := s.repo.FindUserByEmail(ctx, req.Email)
 	if err != nil {
 		return nil, err
@@ -33,7 +34,7 @@ func (s *Service) Register(ctx context.Context, req RegisterRequest) (*TokenResp
 	}
 
 	now := time.Now()
-	user := &User{
+	user := &types.User{
 		ID: uuid.NewString(), Email: req.Email, PasswordHash: hash,
 		FirstName: req.FirstName, LastName: req.LastName,
 		EmailVerified: false, CreatedAt: now, UpdatedAt: now,
@@ -49,16 +50,16 @@ func (s *Service) Register(ctx context.Context, req RegisterRequest) (*TokenResp
 	return s.buildSession(ctx, user)
 }
 
-func (s *Service) sendVerificationEmail(ctx context.Context, user *User) error {
+func (s *Service) sendVerificationEmail(ctx context.Context, user *types.User) error {
 	raw, hashed, err := helpers.GenerateToken()
 	if err != nil {
 		return err
 	}
 
 	now := time.Now()
-	t := &VerificationToken{
+	t := &types.VerificationToken{
 		ID: uuid.NewString(), UserID: user.ID, TokenHash: hashed,
-		Type: constants.TokenTypeEmailVerification,
+		Type:      constants.TokenTypeEmailVerification,
 		ExpiresAt: now.Add(constants.VerifyTokenExpiry), CreatedAt: now,
 	}
 	if err := s.repo.CreateVerificationToken(ctx, t); err != nil {

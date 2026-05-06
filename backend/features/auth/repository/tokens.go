@@ -1,4 +1,4 @@
-package auth
+package repository
 
 import (
 	"context"
@@ -6,9 +6,10 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
+	"skema-api/features/auth/types"
 )
 
-func (r *Repository) CreateVerificationToken(ctx context.Context, t *VerificationToken) error {
+func (r *Repository) CreateVerificationToken(ctx context.Context, t *types.VerificationToken) error {
 	_, err := r.db.Exec(ctx,
 		`INSERT INTO verification_tokens (id, user_id, token_hash, type, expires_at, created_at)
 		 VALUES ($1, $2, $3, $4, $5, $6)`,
@@ -17,8 +18,8 @@ func (r *Repository) CreateVerificationToken(ctx context.Context, t *Verificatio
 	return err
 }
 
-func (r *Repository) FindVerificationToken(ctx context.Context, tokenHash, tokenType string) (*VerificationToken, error) {
-	t := &VerificationToken{}
+func (r *Repository) FindVerificationToken(ctx context.Context, tokenHash, tokenType string) (*types.VerificationToken, error) {
+	t := &types.VerificationToken{}
 	err := r.db.QueryRow(ctx,
 		`SELECT id, user_id, token_hash, type, expires_at, created_at
 		 FROM verification_tokens WHERE token_hash = $1 AND type = $2 AND expires_at > $3`,

@@ -2,8 +2,9 @@ package auth
 
 import (
 	"github.com/gin-gonic/gin"
-	"skema-api/core/middleware/auth"
+	mwauth "skema-api/core/middleware/auth"
 	"skema-api/core/middleware/limiter"
+	"skema-api/features/auth/service"
 )
 
 /*
@@ -13,9 +14,9 @@ import (
  * Retourne: rien.
  */
 
-func RegisterRoutes(api *gin.RouterGroup, svc *Service, jwtSecret string) {
+func RegisterRoutes(api *gin.RouterGroup, svc *service.Service, jwtSecret string) {
 	h := NewHandler(svc)
-	authMiddleware := auth.Middleware(jwtSecret)
+	guard := mwauth.Middleware(jwtSecret)
 
 	g := api.Group("/auth")
 	{
@@ -26,7 +27,7 @@ func RegisterRoutes(api *gin.RouterGroup, svc *Service, jwtSecret string) {
 		g.POST("/request-reset", limiter.Strict(), h.requestReset)
 		g.POST("/confirm-reset", h.confirmReset)
 
-		protected := g.Group("", authMiddleware)
+		protected := g.Group("", guard)
 		{
 			protected.POST("/logout", h.logout)
 			protected.POST("/resend-verification", limiter.Strict(), h.resendVerification)

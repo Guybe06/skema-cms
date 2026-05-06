@@ -1,4 +1,4 @@
-package auth
+package service
 
 import (
 	"context"
@@ -7,9 +7,9 @@ import (
 	"github.com/google/uuid"
 	"skema-api/features/auth/constants"
 	"skema-api/features/auth/helpers"
+	"skema-api/features/auth/types"
 )
 
-// timeNow est une variable pour faciliter les tests unitaires.
 var timeNow = time.Now
 
 /*
@@ -19,7 +19,7 @@ var timeNow = time.Now
  * Retourne: la réponse avec les tokens d'accès et de rafraîchissement.
  */
 
-func (s *Service) buildSession(ctx context.Context, user *User) (*TokenResponse, error) {
+func (s *Service) buildSession(ctx context.Context, user *types.User) (*types.TokenResponse, error) {
 	rawRefresh, hashedRefresh, err := helpers.GenerateToken()
 	if err != nil {
 		return nil, err
@@ -27,7 +27,7 @@ func (s *Service) buildSession(ctx context.Context, user *User) (*TokenResponse,
 
 	sessionID := uuid.NewString()
 	now := timeNow()
-	session := &Session{
+	session := &types.Session{
 		ID:        sessionID,
 		UserID:    user.ID,
 		TokenHash: hashedRefresh,
@@ -43,11 +43,11 @@ func (s *Service) buildSession(ctx context.Context, user *User) (*TokenResponse,
 		return nil, err
 	}
 
-	return &TokenResponse{
+	return &types.TokenResponse{
 		AccessToken:  accessToken,
 		RefreshToken: rawRefresh,
 		ExpiresIn:    int(constants.AccessTokenExpiry.Seconds()),
-		User: UserResponse{
+		User: types.UserResponse{
 			ID:            user.ID,
 			Email:         user.Email,
 			FirstName:     user.FirstName,

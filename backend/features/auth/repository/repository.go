@@ -1,4 +1,4 @@
-package auth
+package repository
 
 import (
 	"context"
@@ -7,18 +7,19 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"skema-api/features/auth/types"
 )
 
 type Repository struct {
 	db *pgxpool.Pool
 }
 
-func NewRepository(db *pgxpool.Pool) *Repository {
+func New(db *pgxpool.Pool) *Repository {
 	return &Repository{db: db}
 }
 
-func (r *Repository) FindUserByEmail(ctx context.Context, email string) (*User, error) {
-	u := &User{}
+func (r *Repository) FindUserByEmail(ctx context.Context, email string) (*types.User, error) {
+	u := &types.User{}
 	err := r.db.QueryRow(ctx,
 		`SELECT id, email, password_hash, first_name, last_name, email_verified, created_at, updated_at
 		 FROM users WHERE email = $1`, email,
@@ -29,8 +30,8 @@ func (r *Repository) FindUserByEmail(ctx context.Context, email string) (*User, 
 	return u, err
 }
 
-func (r *Repository) FindUserByID(ctx context.Context, id string) (*User, error) {
-	u := &User{}
+func (r *Repository) FindUserByID(ctx context.Context, id string) (*types.User, error) {
+	u := &types.User{}
 	err := r.db.QueryRow(ctx,
 		`SELECT id, email, password_hash, first_name, last_name, email_verified, created_at, updated_at
 		 FROM users WHERE id = $1`, id,
@@ -41,7 +42,7 @@ func (r *Repository) FindUserByID(ctx context.Context, id string) (*User, error)
 	return u, err
 }
 
-func (r *Repository) CreateUser(ctx context.Context, u *User) error {
+func (r *Repository) CreateUser(ctx context.Context, u *types.User) error {
 	_, err := r.db.Exec(ctx,
 		`INSERT INTO users (id, email, password_hash, first_name, last_name, email_verified, created_at, updated_at)
 		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
