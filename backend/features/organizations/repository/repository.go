@@ -102,6 +102,14 @@ func (r *Repository) IsMember(ctx context.Context, orgID, userID string) (bool, 
 	return exists, err
 }
 
+func (r *Repository) FindBySlugID(ctx context.Context, slug string) (string, error) {
+	org, err := r.FindBySlug(ctx, slug)
+	if err != nil || org == nil {
+		return "", err
+	}
+	return org.ID, nil
+}
+
 func (r *Repository) SlugExists(ctx context.Context, slug string) (bool, error) {
 	var exists bool
 	err := r.db.QueryRow(ctx,

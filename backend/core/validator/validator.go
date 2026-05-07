@@ -2,6 +2,7 @@ package validator
 
 import (
 	"fmt"
+	"regexp"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -12,7 +13,16 @@ type FieldError struct {
 	Message string `json:"message"`
 }
 
-var instance = validator.New()
+var (
+	reAlphanumUnderscore = regexp.MustCompile(`^[a-zA-Z0-9_]+$`)
+	instance             = func() *validator.Validate {
+		v := validator.New()
+		v.RegisterValidation("alphanum_underscore", func(fl validator.FieldLevel) bool {
+			return reAlphanumUnderscore.MatchString(fl.Field().String())
+		})
+		return v
+	}()
+)
 
 /*
  * Validate vérifie la conformité d'un DTO par rapport à ses tags de validation.
@@ -68,7 +78,7 @@ func translateError(e validator.FieldError) string {
 		return fmt.Sprintf(MsgMinValue, e.Param())
 	case "lte":
 		return fmt.Sprintf(MsgMaxValue, e.Param())
-	case "alphanum":
+	case "alphanum", "alphanum_underscore":
 		return MsgAlphaNum
 	default:
 		return MsgInvalid

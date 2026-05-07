@@ -20,21 +20,31 @@ import (
 	"skema-api/features/accounts"
 	accountsrepo "skema-api/features/accounts/repository"
 	accountssvc "skema-api/features/accounts/service"
+	"skema-api/features/apikeys"
+	apikeysrepo "skema-api/features/apikeys/repository"
+	apikeyssvc "skema-api/features/apikeys/service"
+	"skema-api/features/collections"
+	collectionsrepo "skema-api/features/collections/repository"
+	collectionssvc "skema-api/features/collections/service"
 	"skema-api/features/connections"
 	connectionsrepo "skema-api/features/connections/repository"
 	connectionssvc "skema-api/features/connections/service"
+	"skema-api/features/content"
+	contentsvc "skema-api/features/content/service"
 	"skema-api/features/memberships"
 	membershipsrepo "skema-api/features/memberships/repository"
 	membershipssvc "skema-api/features/memberships/service"
 	"skema-api/features/organizations"
 	orgsrepo "skema-api/features/organizations/repository"
 	orgssvc "skema-api/features/organizations/service"
+	"skema-api/features/publicapi"
 	"skema-api/features/users"
 	usersrepo "skema-api/features/users/repository"
 	userssvc "skema-api/features/users/service"
 )
 
 const testDBName = "skemacms_test"
+const testEncKey = "test-encryption-key-32-chars-pad!"
 
 var (
 	testPool      *pgxpool.Pool
@@ -42,7 +52,6 @@ var (
 	testJWTSecret = "jwt-secret-pour-les-tests-uniquement"
 )
 
-// Initialise la base de données de test et le routeur avant tous les tests du paquet.
 func TestMain(m *testing.M) {
 	_ = godotenv.Load("../../.env")
 	gin.SetMode(gin.TestMode)
@@ -118,7 +127,19 @@ func buildRouter() *gin.Engine {
 	orgsRepository := orgsrepo.New(testPool)
 	organizations.RegisterRoutes(v1, orgssvc.New(orgsRepository), testJWTSecret)
 	memberships.RegisterRoutes(v1, membershipssvc.New(membershipsrepo.New(testPool), orgsRepository, m, "http://localhost:3001"), testJWTSecret)
-	connections.RegisterRoutes(v1, connectionssvc.New(connectionsrepo.New(testPool), orgsRepository, "test-encryption-key-32-chars-pad!"), testJWTSecret)
+
+	connSvc := connectionssvc.New(connectionsrepo.New(testPool), orgsRepository, testEncKey)
+	connections.RegisterRoutes(v1, connSvc, testJWTSecret)
+
+	collRepo := collectionsrepo.New(testPool)
+	collections.RegisterRoutes(v1, collectionssvc.New(collRepo, orgsRepository, connSvc), testJWTSecret)
+	content.RegisterRoutes(v1, contentsvc.New(collRepo, orgsRepository, connSvc), testJWTSecret)
+
+	apikeySvc := apikeyssvc.New(apikeysrepo.New(testPool), orgsRepository)
+	apikeys.RegisterRoutes(v1, apikeySvc, testJWTSecret)
+
+	pub := v1.Group("/pub")
+	publicapi.RegisterRoutes(pub, apikeySvc, orgsRepository, collRepo, connSvc)
 
 	return r
 }
@@ -138,18 +159,38 @@ func getenv(key, fallback string) string {
 	return fallback
 }
 
-// Vide les tables entre les tests pour garantir l'isolation.
+func dbPort() int {
+	v := getenv("CMS_DB_PORT", "5432")
+	n := 5432
+	fmt.Sscanf(v, "%d", &n)
+	return n
+}
+
 func truncateTables(t *testing.T) {
 	t.Helper()
-	_, err := testPool.Exec(context.Background(),
-		`TRUNCATE users, sessions, verification_tokens, organizations, memberships, connections RESTART IDENTITY CASCADE`,
+	ctx := context.Background()
+
+	// Supprimer les tables dynamiques créées par les tests (préfixe test_)
+	rows, err := testPool.Query(ctx,
+		`SELECT tablename FROM pg_tables WHERE schemaname='public' AND tablename LIKE 'test_%'`)
+	if err == nil {
+		defer rows.Close()
+		for rows.Next() {
+			var name string
+			rows.Scan(&name)
+			testPool.Exec(ctx, fmt.Sprintf(`DROP TABLE IF EXISTS "%s" CASCADE`, name))
+		}
+	}
+
+	_, err = testPool.Exec(ctx,
+		`TRUNCATE users, sessions, verification_tokens, organizations, memberships, connections,
+		         collections, collection_fields, api_keys RESTART IDENTITY CASCADE`,
 	)
 	if err != nil {
 		t.Fatalf("nettoyage des tables échoué : %v", err)
 	}
 }
 
-// Envoie une requête HTTP au routeur de test et retourne la réponse.
 func do(method, path string, body any, token string) *httptest.ResponseRecorder {
 	var buf bytes.Buffer
 	if body != nil {
@@ -165,7 +206,21 @@ func do(method, path string, body any, token string) *httptest.ResponseRecorder 
 	return w
 }
 
-// Décode le corps JSON d'une réponse dans la cible fournie.
+func doWithKey(method, path string, body any, apiKey string) *httptest.ResponseRecorder {
+	var buf bytes.Buffer
+	if body != nil {
+		json.NewEncoder(&buf).Encode(body)
+	}
+	req := httptest.NewRequest(method, path, &buf)
+	req.Header.Set("Content-Type", "application/json")
+	if apiKey != "" {
+		req.Header.Set("X-Api-Key", apiKey)
+	}
+	w := httptest.NewRecorder()
+	testRouter.ServeHTTP(w, req)
+	return w
+}
+
 func decode(t *testing.T, w *httptest.ResponseRecorder, target any) {
 	t.Helper()
 	if err := json.NewDecoder(w.Body).Decode(target); err != nil {
@@ -173,7 +228,6 @@ func decode(t *testing.T, w *httptest.ResponseRecorder, target any) {
 	}
 }
 
-// Vérifie que le code HTTP correspond à la valeur attendue.
 func assertStatus(t *testing.T, w *httptest.ResponseRecorder, expected int) {
 	t.Helper()
 	if w.Code != expected {
@@ -181,7 +235,11 @@ func assertStatus(t *testing.T, w *httptest.ResponseRecorder, expected int) {
 	}
 }
 
-// Inscrit un utilisateur de test et retourne son access token.
+func logResponse(t *testing.T, label string, w *httptest.ResponseRecorder) {
+	t.Helper()
+	t.Logf(">>> %s [%d]\n%s", label, w.Code, w.Body.String())
+}
+
 func signupAndGetToken(t *testing.T) string {
 	t.Helper()
 	w := do(http.MethodPost, "/v1/accounts/signup", map[string]string{

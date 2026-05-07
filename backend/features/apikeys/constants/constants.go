@@ -1,0 +1,9 @@
+package constants
+
+const (
+	ErrKeyNotFound   = "clé API introuvable"
+	ErrNotAuthorized = "accès non autorisé"
+
+	MsgKeyCreated = "Clé API créée. Conservez-la précieusement, elle ne sera plus affichée."
+	MsgKeyRevoked = "Clé API révoquée."
+)
