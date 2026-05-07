@@ -62,7 +62,7 @@ func main() {
 	}
 
 	v, dirty, _ := m.Version()
-	fmt.Printf("migration %s done — version: %d, dirty: %v\n", direction, v, dirty)
+	fmt.Printf("migration %s done - version: %d, dirty: %v\n", direction, v, dirty)
 }
 
 func ensureDB() {

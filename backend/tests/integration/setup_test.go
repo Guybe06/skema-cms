@@ -231,7 +231,7 @@ func decode(t *testing.T, w *httptest.ResponseRecorder, target any) {
 func assertStatus(t *testing.T, w *httptest.ResponseRecorder, expected int) {
 	t.Helper()
 	if w.Code != expected {
-		t.Fatalf("statut attendu %d, obtenu %d — corps : %s", expected, w.Code, w.Body.String())
+		t.Fatalf("statut attendu %d, obtenu %d - corps : %s", expected, w.Code, w.Body.String())
 	}
 }
 
