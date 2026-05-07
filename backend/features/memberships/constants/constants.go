@@ -25,4 +25,5 @@ const (
 	MsgInviteAccepted = "Invitation acceptée, vous êtes maintenant membre."
 	MsgRoleUpdated   = "Rôle mis à jour."
 	MsgMemberRemoved = "Membre retiré."
+	MsgMembersFound  = "Membres récupérés."
 )

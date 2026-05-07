@@ -6,18 +6,13 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"skema-api/features/memberships/types"
 )
 
-type Repository struct {
-	db *pgxpool.Pool
-}
+type Repository struct{ db *pgxpool.Pool }
 
-func New(db *pgxpool.Pool) *Repository {
-	return &Repository{db: db}
-}
+func New(db *pgxpool.Pool) *Repository { return &Repository{db: db} }
 
 func (r *Repository) Create(ctx context.Context, m *types.Membership) error {
 	_, err := r.db.Exec(ctx,
@@ -94,26 +89,6 @@ func (r *Repository) Delete(ctx context.Context, id string) error {
 	return err
 }
 
-func (r *Repository) IsMember(ctx context.Context, orgID, userID string) (bool, error) {
-	var exists bool
-	err := r.db.QueryRow(ctx,
-		`SELECT EXISTS(SELECT 1 FROM memberships WHERE organization_id=$1 AND user_id=$2 AND status='active')`,
-		orgID, userID).Scan(&exists)
-	return exists, err
-}
-
-func (r *Repository) IsAdminOrOwner(ctx context.Context, orgID, userID string) (bool, error) {
-	var exists bool
-	err := r.db.QueryRow(ctx,
-		`SELECT EXISTS(
-		   SELECT 1 FROM memberships
-		   WHERE organization_id=$1 AND user_id=$2 AND status='active' AND role='admin'
-		 ) OR EXISTS(
-		   SELECT 1 FROM organizations WHERE id=$1 AND owner_id=$2
-		 )`, orgID, userID).Scan(&exists)
-	return exists, err
-}
-
 func (r *Repository) scanOne(ctx context.Context, query string, args ...any) (*types.Membership, error) {
 	m := &types.Membership{}
 	err := r.db.QueryRow(ctx, query, args...).Scan(
@@ -125,22 +100,4 @@ func (r *Repository) scanOne(ctx context.Context, query string, args ...any) (*t
 		return nil, nil
 	}
 	return m, err
-}
-
-// Convertit une string vide en pgtype.UUID NULL, sinon en UUID valide.
-func uuidParam(s string) pgtype.UUID {
-	var u pgtype.UUID
-	if s == "" {
-		return u
-	}
-	_ = u.Scan(s)
-	return u
-}
-
-// Convertit une string vide en pgtype.Text NULL, sinon en texte valide.
-func textParam(s string) pgtype.Text {
-	if s == "" {
-		return pgtype.Text{}
-	}
-	return pgtype.Text{String: s, Valid: true}
 }

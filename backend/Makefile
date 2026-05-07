@@ -12,7 +12,7 @@ build:
 
 ## docs : génère la documentation Swagger
 docs:
-	$(SWAG) init -g $(CMD)/main.go -d $(CMD) --parseDependency -o $(DOCS_DIR)
+	$(SWAG) init -g $(CMD)/main.go --parseDependency -o $(DOCS_DIR)
 
 ## run : compile, génère les docs et démarre le serveur
 run: docs build

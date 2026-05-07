@@ -1,7 +1,8 @@
 package main
 
 const (
-	APIVersion = "1.0.0"
+	APIVersion    = "1.0.0"
+	MsgHealthOK   = "Serveur opérationnel."
 
 	FeatureAuth          = "authentification"
 	FeatureOrganizations = "organisations"

@@ -21,6 +21,7 @@ const (
 	FieldTypeFile        = "file"
 	FieldTypeImage       = "image"
 
+	ErrOrgNotFound        = "organisation introuvable"
 	ErrCollectionNotFound = "collection introuvable"
 	ErrFieldNotFound      = "champ introuvable"
 	ErrNotAuthorized      = "accès non autorisé"
@@ -28,11 +29,15 @@ const (
 	ErrColumnNameTaken    = "ce nom de colonne est déjà utilisé dans cette collection"
 	ErrSchemaFailed       = "erreur lors de l'application du schéma en base"
 
-	MsgCollectionCreated = "Collection créée."
-	MsgCollectionUpdated = "Collection mise à jour."
-	MsgCollectionDeleted = "Collection supprimée."
-	MsgFieldAdded        = "Champ ajouté."
-	MsgFieldRemoved      = "Champ supprimé."
+	MsgCollectionCreated  = "Collection créée."
+	MsgCollectionFound    = "Collection récupérée."
+	MsgCollectionsFound   = "Collections récupérées."
+	MsgCollectionUpdated  = "Collection mise à jour."
+	MsgCollectionDeleted  = "Collection supprimée."
+	MsgFieldAdded         = "Champ ajouté."
+	MsgFieldRemoved       = "Champ supprimé."
+	MsgInternalError      = "Une erreur est survenue."
+	MsgInvalidJSON        = "Corps JSON invalide."
 )
 
 // ValidFieldTypes liste les types de champs acceptés.

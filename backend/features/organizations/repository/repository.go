@@ -10,13 +10,9 @@ import (
 	"skema-api/features/organizations/types"
 )
 
-type Repository struct {
-	db *pgxpool.Pool
-}
+type Repository struct{ db *pgxpool.Pool }
 
-func New(db *pgxpool.Pool) *Repository {
-	return &Repository{db: db}
-}
+func New(db *pgxpool.Pool) *Repository { return &Repository{db: db} }
 
 func (r *Repository) Create(ctx context.Context, org *types.Organization) error {
 	_, err := r.db.Exec(ctx,
@@ -91,29 +87,4 @@ func (r *Repository) TransferOwnership(ctx context.Context, id, newOwnerID strin
 func (r *Repository) Delete(ctx context.Context, id string) error {
 	_, err := r.db.Exec(ctx, `DELETE FROM organizations WHERE id = $1`, id)
 	return err
-}
-
-func (r *Repository) IsMember(ctx context.Context, orgID, userID string) (bool, error) {
-	var exists bool
-	err := r.db.QueryRow(ctx,
-		`SELECT EXISTS(SELECT 1 FROM memberships WHERE organization_id = $1 AND user_id = $2 AND status = 'active')`,
-		orgID, userID,
-	).Scan(&exists)
-	return exists, err
-}
-
-func (r *Repository) FindBySlugID(ctx context.Context, slug string) (string, error) {
-	org, err := r.FindBySlug(ctx, slug)
-	if err != nil || org == nil {
-		return "", err
-	}
-	return org.ID, nil
-}
-
-func (r *Repository) SlugExists(ctx context.Context, slug string) (bool, error) {
-	var exists bool
-	err := r.db.QueryRow(ctx,
-		`SELECT EXISTS(SELECT 1 FROM organizations WHERE slug = $1)`, slug,
-	).Scan(&exists)
-	return exists, err
 }

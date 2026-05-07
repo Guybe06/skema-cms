@@ -7,4 +7,6 @@ const (
 
 	MsgProfileUpdated  = "Profil mis à jour."
 	MsgPasswordChanged = "Mot de passe modifié."
+	MsgProfileFound    = "Profil récupéré."
+	MsgInternalError   = "Une erreur est survenue."
 )

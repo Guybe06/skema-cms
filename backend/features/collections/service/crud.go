@@ -14,7 +14,7 @@ import (
 func (s *Service) Create(ctx context.Context, requesterID, orgSlug string, req types.CreateCollectionRequest) (*types.Collection, error) {
 	org, err := s.orgsRepo.FindBySlug(ctx, orgSlug)
 	if err != nil || org == nil {
-		return nil, errors.New("organisation introuvable")
+		return nil, errors.New(constants.ErrOrgNotFound)
 	}
 	if err := s.checkAccess(ctx, org.ID, org.OwnerID, requesterID); err != nil {
 		return nil, err
@@ -44,52 +44,15 @@ func (s *Service) Create(ctx context.Context, requesterID, orgSlug string, req t
 
 	now := time.Now()
 	c := &types.Collection{
-		ID:             uuid.New().String(),
-		ConnectionID:   req.ConnectionID,
-		OrganizationID: org.ID,
-		Name:           req.Name,
-		TableName:      req.TableName,
-		DisplayName:    req.DisplayName,
-		Description:    req.Description,
-		CreatedAt:      now,
-		UpdatedAt:      now,
+		ID: uuid.New().String(), ConnectionID: req.ConnectionID,
+		OrganizationID: org.ID, Name: req.Name, TableName: req.TableName,
+		DisplayName: req.DisplayName, Description: req.Description,
+		CreatedAt: now, UpdatedAt: now,
 	}
 	if err := s.repo.Create(ctx, c); err != nil {
 		return nil, err
 	}
 	return c, nil
-}
-
-func (s *Service) List(ctx context.Context, requesterID, orgSlug string) ([]*types.Collection, error) {
-	org, err := s.orgsRepo.FindBySlug(ctx, orgSlug)
-	if err != nil || org == nil {
-		return nil, errors.New("organisation introuvable")
-	}
-	if err := s.checkAccess(ctx, org.ID, org.OwnerID, requesterID); err != nil {
-		return nil, err
-	}
-	return s.repo.ListByOrg(ctx, org.ID)
-}
-
-func (s *Service) Get(ctx context.Context, requesterID, orgSlug, id string) (*types.Collection, error) {
-	org, err := s.orgsRepo.FindBySlug(ctx, orgSlug)
-	if err != nil || org == nil {
-		return nil, errors.New("organisation introuvable")
-	}
-	if err := s.checkAccess(ctx, org.ID, org.OwnerID, requesterID); err != nil {
-		return nil, err
-	}
-
-	c, err := s.repo.FindByID(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	if c == nil || c.OrganizationID != org.ID {
-		return nil, errors.New(constants.ErrCollectionNotFound)
-	}
-
-	c.Fields, err = s.repo.ListFields(ctx, c.ID)
-	return c, err
 }
 
 func (s *Service) Update(ctx context.Context, requesterID, orgSlug, id string, req types.UpdateCollectionRequest) (*types.Collection, error) {
@@ -136,18 +99,4 @@ func (s *Service) Delete(ctx context.Context, requesterID, orgSlug, id string) e
 	}
 
 	return s.repo.Delete(ctx, c.ID)
-}
-
-func (s *Service) checkAccess(ctx context.Context, orgID, ownerID, requesterID string) error {
-	if ownerID == requesterID {
-		return nil
-	}
-	ok, err := s.orgsRepo.IsMember(ctx, orgID, requesterID)
-	if err != nil {
-		return err
-	}
-	if !ok {
-		return errors.New(constants.ErrNotAuthorized)
-	}
-	return nil
 }

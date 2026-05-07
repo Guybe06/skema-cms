@@ -8,6 +8,7 @@ import (
 	"skema-api/core/conduit"
 	"skema-api/core/conduit/adapters/factory"
 	"skema-api/core/crypto"
+	"skema-api/features/connections/constants"
 )
 
 // OpenConduit déchiffre les credentials et ouvre une connexion Conduit vers la base client.
@@ -17,7 +18,7 @@ func (s *Service) OpenConduit(ctx context.Context, connectionID string) (conduit
 		return nil, err
 	}
 	if rec == nil {
-		return nil, errors.New("connexion introuvable")
+		return nil, errors.New(constants.ErrConnectionNotFound)
 	}
 
 	host, err := crypto.Decrypt(rec.HostEncrypted, s.encryptionKey)

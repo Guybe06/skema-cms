@@ -72,7 +72,7 @@ func (h *Handler) list(c *gin.Context) {
 	for _, k := range keys {
 		result = append(result, toResp(k))
 	}
-	response.OK(c, "Clés API récupérées.", result)
+	response.OK(c, constants.MsgKeysFound, result)
 }
 
 // @Summary      Révoquer une clé API
@@ -98,6 +98,6 @@ func handleErr(c *gin.Context, err error) {
 	case constants.ErrKeyNotFound:
 		response.NotFound(c, err.Error())
 	default:
-		response.Internal(c, "Une erreur est survenue.")
+		response.Internal(c, constants.MsgInternalError)
 	}
 }

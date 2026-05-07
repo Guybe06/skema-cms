@@ -6,8 +6,11 @@ const (
 	ErrNotOwner         = "seul le propriétaire peut effectuer cette action"
 	ErrNewOwnerNotMember = "le nouveau propriétaire doit être membre de l'organisation"
 
-	MsgOrgCreated     = "Organisation créée."
-	MsgOrgUpdated     = "Organisation mise à jour."
-	MsgOrgDeleted     = "Organisation supprimée."
+	MsgOrgCreated       = "Organisation créée."
+	MsgOrgUpdated       = "Organisation mise à jour."
+	MsgOrgDeleted       = "Organisation supprimée."
 	MsgOwnerTransferred = "Propriété transférée."
+	MsgOrgsFound        = "Organisations récupérées."
+	MsgOrgFound         = "Organisation récupérée."
+	MsgInternalError    = "Une erreur est survenue."
 )
